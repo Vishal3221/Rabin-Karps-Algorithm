@@ -1,0 +1,57 @@
+import matplotlib.pyplot as plt
+
+def rabin_karp_search_with_visualization(text, pattern):
+    n = len(text)
+    m = len(pattern)
+    p = 31  # Prime number for hash computation
+    q = 101  # Large prime modulus
+    p_m = pow(p, m-1, q)  # Precomputed power
+
+    pattern_hash = 0
+    text_hash = 0
+    
+    # Compute initial hash values
+    for i in range(m):
+        pattern_hash = (pattern_hash * p + ord(pattern[i])) % q
+        text_hash = (text_hash * p + ord(text[i])) % q
+    
+    matches = []
+    hash_values = []
+
+    # Rolling hash computation
+    for i in range(n - m + 1):
+        hash_values.append((i, text_hash))
+        
+        # If hash matches, compare the actual strings
+        if pattern_hash == text_hash:
+            if text[i:i+m] == pattern:
+                matches.append(i)
+        
+        # Compute next window hash
+        if i < n - m:
+            text_hash = (text_hash - ord(text[i]) * p_m) * p + ord(text[i + m])
+            text_hash %= q
+    
+    return matches, hash_values
+
+# Example usage
+text = "abracadabra"
+pattern = "abra"
+
+matches, hash_values = rabin_karp_search_with_visualization(text, pattern)
+
+# Print result
+print("Pattern found at positions:", matches)
+
+# Plot hash values
+positions, values = zip(*hash_values)
+plt.figure(figsize=(10, 6))
+plt.plot(positions, values, marker='o', label='Hash Value')
+plt.axhline(y=pattern_hash, color='r', linestyle='--', label='Pattern Hash Value')
+plt.title('Rabin-Karp Hash Values for Each Text Window')
+plt.xlabel('Position in Text')
+plt.ylabel('Hash Value')
+plt.legend()
+plt.xticks(positions)
+plt.grid(True)
+plt.show()
